@@ -130,26 +130,61 @@ body {
 .lb-p { left: max(4px, env(safe-area-inset-left, 0px)); }
 .lb-nx { right: max(4px, env(safe-area-inset-right, 0px)); }
 
+.coupons h2 { font-family: var(--display); font-weight: 400; font-size: 38px; line-height: 1.1; margin: 0 0 6px; text-wrap: balance; }
+.coupons > p { margin: 0 0 20px; color: var(--ink-soft); font-size: 15px; }
+.tickets { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.tk { all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border: 1px dashed var(--glow); border-radius: 4px; background: var(--bg-2); cursor: pointer; min-width: 0; }
+.tk-t { font-size: 18px; min-width: 0; overflow-wrap: anywhere; }
+.tk-s { flex: none; font-weight: 600; font-size: 12px; letter-spacing: .2em; color: var(--rose); border: 1px solid var(--rose); padding: 4px 8px; border-radius: 2px; transform: rotate(-6deg); opacity: 0; }
+.tk.on { border-color: var(--rose); border-style: solid; }
+.tk.on .tk-s { opacity: 1; }
+.tk:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+
+[hidden] { display: none !important; }
+.intro { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: flex; align-items: center; justify-content: center; transition: opacity .7s ease; }
+.intro.out { opacity: 0; pointer-events: none; }
+.intro video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #0a0c1a; }
+.intro-card { position: relative; width: 100%; max-width: 560px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
+.intro-card h1 { font-family: var(--display); font-weight: 400; font-style: italic; font-size: clamp(72px, 24vw, 132px); line-height: .95; margin: 0; color: var(--glow); }
+.intro-card p { margin: 0; color: var(--ink-soft); font-size: 19px; }
+.cap { position: absolute; left: max(20px, env(safe-area-inset-left, 0px)); right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(32px + env(safe-area-inset-bottom, 0px)); font-family: var(--display); font-style: italic; font-size: 34px; line-height: 1.15; color: var(--ink); text-shadow: 0 2px 14px rgba(0, 0, 0, .8); opacity: 0; transition: opacity 1s ease; pointer-events: none; }
+.cap.on { opacity: 1; }
+.skip { all: unset; box-sizing: border-box; position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); font-size: 13px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--ink); background: rgba(18, 22, 43, .6); border: 1px solid var(--line); padding: 9px 16px; border-radius: 999px; cursor: pointer; }
+.skip:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .intro, .cap { transition: none; } }
+
 canvas#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
 html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 </style>
 </head>
 <body>
+<div class="intro" id="intro">
+  <video id="iv" src="video.mp4" playsinline preload="metadata" hidden></video>
+  <div class="intro-card" id="ic">
+    <span class="stamp">VIII · XI</span>
+    <h1>Rabişim</h1>
+    <p>Sana bir şey hazırladım.</p>
+    <button class="btn" id="start" type="button">Başla</button>
+  </div>
+  <p class="cap" id="cap">Rabişim, iyi ki varsın.</p>
+  <button class="skip" id="skip" type="button" hidden>Atla</button>
+</div>
+
 <canvas id="fx" aria-hidden="true"></canvas>
 
 <main class="wrap">
   <header class="hero">
     <span class="stamp">VIII · XI</span>
     <h1>8 <em>Kasım</em></h1>
-    <p>Yıl dönümümüz kutlu olsun, Rabia.</p>
+    <p>Yıl dönümümüz kutlu olsun, Rabişim.</p>
   </header>
 
   <section class="letter" aria-label="Mektup">
-    <h2>Rabia,</h2>
+    <h2>Rabişim,</h2>
     <p>Bugün yine 8 Kasım. Bir yıl daha geçti ve seninle geçen her günü bir öncekinden daha çok seviyorum.</p>
     <p>Sana sadece bir mesaj yazıp geçmek istemedim. Elimden gelen en güzel şeyi yapmak istedim, bu sayfa o yüzden burada.</p>
-    <p>Yanımda olduğun, güldüğün, bana sabrettiğin için teşekkür ederim. İyi ki varsın, iyi ki benimsin.</p>
+    <p>Hayatımda olduğun, güldüğün, bana sabrettiğin için teşekkür ederim. İyi ki varsın, iyi ki benimsin.</p>
     <p>Seni seviyorum.</p>
     <span class="sign">Emre</span>
   </section>
@@ -187,13 +222,25 @@ html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area
     <ol class="list" id="list"></ol>
   </section>
 
+  <section class="coupons" aria-labelledby="ct">
+    <h2 id="ct">Hediyem: beş kupon</h2>
+    <p>Hepsi senin. İstediğine dokun, ekran görüntüsünü bana gönder, ben yaparım.</p>
+    <div class="tickets">
+      <button class="tk" type="button" aria-pressed="false"><span class="tk-t">1000 TL nakit hediye</span><span class="tk-s">SEÇTİN</span></button>
+      <button class="tk" type="button" aria-pressed="false"><span class="tk-t">Adresine gelecek çiçek</span><span class="tk-s">SEÇTİN</span></button>
+      <button class="tk" type="button" aria-pressed="false"><span class="tk-t">Benim seçtiğim hediye, adresine gelecek</span><span class="tk-s">SEÇTİN</span></button>
+      <button class="tk" type="button" aria-pressed="false"><span class="tk-t">Mersin'e gelince istediğin bir yerde akşam yemeği</span><span class="tk-s">SEÇTİN</span></button>
+      <button class="tk" type="button" aria-pressed="false"><span class="tk-t">Mersin'e gelince sınırsız sarılma</span><span class="tk-s">SEÇTİN</span></button>
+    </div>
+  </section>
+
   <section class="finale">
     <h2>Bir şey daha söyleyeceğim.</h2>
     <button class="btn" id="go" type="button">Buna dokun</button>
     <p class="say" id="say" aria-live="polite"></p>
   </section>
 
-  <p class="foot">Emre'den Rabia'ya · her 8 Kasım</p>
+  <p class="foot">Emre'den Rabişim'e · her 8 Kasım</p>
 </main>
 
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Fotoğraf">
@@ -279,6 +326,7 @@ html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area
     if (!running) { running = true; requestAnimationFrame(tick); }
   }
 
+  window.__burst = burst;
   function rain() {
     if (reduce) return;
     for (var i = 0; i < 70; i++) {
@@ -308,9 +356,10 @@ html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area
     else { running = false; ctx.clearRect(0, 0, innerWidth, innerHeight); }
   }
 
+  window.__rain = rain;
   var say = document.getElementById("say");
   document.getElementById("go").addEventListener("click", function () {
-    say.textContent = "Seni çok seviyorum, Rabia.";
+    say.textContent = "Seni çok seviyorum, Rabişim.";
     rain();
   });
 })();
@@ -348,6 +397,48 @@ html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area
     sx = null;
     if (Math.abs(dx) > 50) show(dx < 0 ? cur + 1 : cur - 1);
   });
+})();
+</script>
+<script>
+(function () {
+  Array.prototype.forEach.call(document.querySelectorAll(".tk"), function (b) {
+    b.addEventListener("click", function (e) {
+      var on = b.classList.toggle("on");
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      if (on && window.__burst) window.__burst(e.clientX, e.clientY, 10);
+    });
+  });
+})();
+</script>
+<script>
+(function () {
+  var intro = document.getElementById("intro");
+  var v = document.getElementById("iv");
+  var card = document.getElementById("ic");
+  var cap = document.getElementById("cap");
+  var skip = document.getElementById("skip");
+  var done = false;
+  document.documentElement.style.overflow = "hidden";
+  function finish() {
+    if (done) return;
+    done = true;
+    try { v.pause(); } catch (e) {}
+    intro.classList.add("out");
+    document.documentElement.style.overflow = "";
+    setTimeout(function () { intro.hidden = true; }, 750);
+    setTimeout(function () { if (window.__rain) window.__rain(); }, 500);
+  }
+  document.getElementById("start").addEventListener("click", function () {
+    card.hidden = true;
+    v.hidden = false;
+    skip.hidden = false;
+    var p = v.play();
+    if (p && p.catch) p.catch(finish);
+    setTimeout(function () { cap.classList.add("on"); }, 600);
+  });
+  v.addEventListener("ended", finish);
+  v.addEventListener("error", finish);
+  skip.addEventListener("click", finish);
 })();
 </script>
 </body>
