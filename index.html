@@ -153,6 +153,20 @@ body {
 .skip:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .intro, .cap { transition: none; } }
 
+.since { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 22px 0; }
+.since-k { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-soft); }
+.since-n { margin: 0; font-family: var(--display); font-style: italic; font-size: clamp(56px, 18vw, 84px); line-height: 1; color: var(--glow); font-variant-numeric: tabular-nums; }
+.since-n #sx { font-size: .5em; color: var(--ink); }
+.since-d { margin: 0; font-size: 18px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+.voice h2 { font-family: var(--display); font-weight: 400; font-size: 38px; line-height: 1.1; margin: 0 0 6px; text-wrap: balance; }
+.voice > p { margin: 0 0 20px; color: var(--ink-soft); font-size: 15px; }
+.player { display: flex; flex-direction: column; align-items: stretch; gap: 12px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 4px; padding: 20px; }
+.player .btn { align-self: flex-start; }
+.pl-bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; cursor: pointer; }
+.pl-bar span { display: block; height: 100%; width: 0; background: var(--rose); }
+.pl-t { font-size: 14px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
 canvas#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
 
 html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -180,6 +194,12 @@ html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area
     <p>Yıl dönümümüz kutlu olsun, Rabişim.</p>
   </header>
 
+  <section class="since" aria-label="Birlikte geçen süre">
+    <p class="since-k">8 Kasım 2022'den bu yana</p>
+    <p class="since-n"><span id="sy">4</span> yıl<span id="sx"></span></p>
+    <p class="since-d">toplam <span id="sd">1461</span> gün</p>
+  </section>
+
   <section class="letter" aria-label="Mektup">
     <h2>Rabişim,</h2>
     <p>Bugün yine 8 Kasım. Bir yıl daha geçti ve seninle geçen her günü bir öncekinden daha çok seviyorum.</p>
@@ -187,6 +207,17 @@ html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area
     <p>Hayatımda olduğun, güldüğün, bana sabrettiğin için teşekkür ederim. İyi ki varsın, iyi ki benimsin.</p>
     <p>Seni seviyorum.</p>
     <span class="sign">Emre</span>
+  </section>
+
+  <section class="voice" id="voice" aria-labelledby="vt">
+    <h2 id="vt">Bir de sesim var</h2>
+    <p>Kulaklığını tak, Rabişim.</p>
+    <div class="player">
+      <button class="btn" id="plb" type="button">Beni dinle</button>
+      <div class="pl-bar" id="plbar" aria-hidden="true"><span id="plf"></span></div>
+      <span class="pl-t" id="plt">0:00 / 0:35</span>
+      <audio id="au" src="ses.mp3" preload="metadata"></audio>
+    </div>
   </section>
 
   <section class="memories" aria-labelledby="mt">
@@ -439,6 +470,54 @@ html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area
   v.addEventListener("ended", finish);
   v.addEventListener("error", finish);
   skip.addEventListener("click", finish);
+})();
+</script>
+<script>
+(function () {
+  var now = new Date();
+  var start = Date.UTC(2022, 10, 8);
+  var today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  var days = Math.round((today - start) / 864e5);
+  var y = now.getFullYear() - 2022;
+  if (now.getMonth() < 10 || (now.getMonth() === 10 && now.getDate() < 8)) y--;
+  var extra = Math.round((today - Date.UTC(2022 + y, 10, 8)) / 864e5);
+  if (days < 0 || y < 0) return;
+  document.getElementById("sy").textContent = y;
+  document.getElementById("sx").textContent = extra > 0 ? " " + extra + " gün" : "";
+  document.getElementById("sd").textContent = days;
+})();
+</script>
+<script>
+(function () {
+  var au = document.getElementById("au");
+  var b = document.getElementById("plb");
+  var bar = document.getElementById("plbar");
+  var fill = document.getElementById("plf");
+  var tm = document.getElementById("plt");
+  function f(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2); }
+  function paint() {
+    var d = au.duration || 0;
+    fill.style.width = d ? (au.currentTime / d * 100) + "%" : "0%";
+    tm.textContent = f(au.currentTime) + " / " + f(d);
+  }
+  b.addEventListener("click", function () {
+    if (au.paused) {
+      var p = au.play();
+      if (p && p.catch) p.catch(function () { b.textContent = "Beni dinle"; });
+    } else {
+      au.pause();
+    }
+  });
+  au.addEventListener("play", function () { b.textContent = "Durdur"; });
+  au.addEventListener("pause", function () { b.textContent = au.currentTime > 0 && !au.ended ? "Devam et" : "Beni dinle"; });
+  au.addEventListener("ended", function () { b.textContent = "Tekrar dinle"; au.currentTime = 0; paint(); });
+  au.addEventListener("timeupdate", paint);
+  au.addEventListener("loadedmetadata", paint);
+  au.addEventListener("error", function () { document.getElementById("voice").hidden = true; });
+  bar.addEventListener("click", function (e) {
+    var r = bar.getBoundingClientRect();
+    if (au.duration) { au.currentTime = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * au.duration; paint(); }
+  });
 })();
 </script>
 </body>
